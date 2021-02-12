@@ -130,7 +130,21 @@ var uiController = (
             percentageLabel: '.budget__expenses--percentage',
             container: '.container',
             expPercentageLabel: '.item__percentage'
-        }
+        };
+        var formatNumber = function (num, type) {
+            // 1. + or -
+            // 2. exactly 2 decimals
+            // 3. , 
+            var numberSplit, int, dec;
+            num = Math.abs(num).toFixed(2);
+            numberSplit = num.split('.');
+            int = numberSplit[0];
+            dec = numberSplit[1];
+            if (int.length > 3) {
+                int = int.substr(0, int.length - 3) + ',' + int.substr(int.length - 3, 3);
+            }
+            return (type === 'exp' ? '-' : '+') + ' ' + int + '.' + dec;
+        };
         return {
             getInput: function() {
                 return {
@@ -155,7 +169,7 @@ var uiController = (
                 // Replace placeholder text with data
                 dataHtml = html.replace('%id%', object.id);
                 dataHtml = dataHtml.replace('%description%', object.description);
-                dataHtml = dataHtml.replace('%value%', object.value);
+                dataHtml = dataHtml.replace('%value%', formatNumber(object.value, type));
                 // Insert dataHtml into DOM
                 document.querySelector(element).insertAdjacentHTML('beforeend', dataHtml);
             },
@@ -172,9 +186,11 @@ var uiController = (
                 fields[0].focus();
             },
             displayBudget: function(budget) {
-                document.querySelector(domString.budgetLabel).textContent = budget.budget;
-                document.querySelector(domString.totalIncomeLabel).textContent = budget.totalIncome;
-                document.querySelector(domString.totalExpensesLabel).textContent = budget.totalExpenses;
+                var type;
+                budget.budget > 0 ? type = 'inc' : type = 'exp';
+                document.querySelector(domString.budgetLabel).textContent = formatNumber(budget.budget, type);
+                document.querySelector(domString.totalIncomeLabel).textContent = formatNumber(budget.totalIncome, 'inc');
+                document.querySelector(domString.totalExpensesLabel).textContent = formatNumber(budget.totalExpenses, 'exp');
                 if (budget.percentage > 0) {
                     document.querySelector(domString.percentageLabel).textContent = budget.percentage + '%';
                 } else {
