@@ -129,7 +129,8 @@ var uiController = (
             totalExpensesLabel: '.budget__expenses--value',
             percentageLabel: '.budget__expenses--percentage',
             container: '.container',
-            expPercentageLabel: '.item__percentage'
+            expPercentageLabel: '.item__percentage',
+            dateLabel: '.budget__title--month'
         };
         var formatNumber = function (num, type) {
             // 1. + or -
@@ -145,6 +146,12 @@ var uiController = (
             }
             return (type === 'exp' ? '-' : '+') + ' ' + int + '.' + dec;
         };
+        // creating our own forEach function
+        var nodeListForEach = function(list, callBack) {
+            for (var index = 0; index < list.length; index++) {
+                callBack(list[index], index);
+            }
+        }
         return {
             getInput: function() {
                 return {
@@ -199,12 +206,6 @@ var uiController = (
             },
             displayPercentages: function(percentages) {
                 var fields = document.querySelectorAll(domString.expPercentageLabel);
-                // creating our own forEach function
-                var nodeListForEach = function(list, callBack) {
-                    for (var index = 0; index < list.length; index++) {
-                        callBack(list[index], index);
-                    }
-                }
                 nodeListForEach(fields, function(current, index) {
                     if (percentages[index] > 0) {
                         current.textContent = percentages[index] + '%';
@@ -212,6 +213,23 @@ var uiController = (
                         current.textContent = '--';
                     }
                 })
+            },
+            displayDate: function() {
+                var date, year, month, months;
+                date = new Date();
+                year = date.getFullYear();
+                month = date.getMonth();
+                months = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Oct', 'Nov', 'Dec'];
+                document.querySelector(domString.dateLabel).textContent = months[month] + ' ' + year;
+            },
+            changedType: function() {
+                var fields = document.querySelectorAll(
+                    domString.inputType + ', ' + domString.inputDescription + ', ' + domString.inputValue
+                );
+                nodeListForEach(fields, function(current) {
+                    current.classList.toggle('red-focus');
+                });
+                document.querySelector(domString.inputButton).classList.toggle('red');
             }
         }
     }
@@ -229,6 +247,7 @@ var controller = (
                 }
             });
             document.querySelector(domString.container).addEventListener('click', ctrlDeleteItem);
+            document.querySelector(domString.inputType).addEventListener('change', uiCtrl.changedType);
         };
         var updateBudget = function() {
             // 1. Calculate the budget
@@ -290,8 +309,9 @@ var controller = (
                     totalIncome: 0,
                     budget: 0,
                     percentage: -1
-                })
+                });
                 setEventListener();
+                uiCtrl.displayDate();
             }
         };
     }
